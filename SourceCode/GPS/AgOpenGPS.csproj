@@ -654,6 +654,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\DistanceDataReceiver.cs" />
     <Compile Include="Settings.cs" />
     <EmbeddedResource Include="Forms\Field\FormEnterFlag.resx">
       <DependentUpon>FormEnterFlag.cs</DependentUpon>

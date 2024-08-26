@@ -1,7 +1,9 @@
 ﻿using AgOpenGPS.Properties;
+using AgOpenGPS.Services;
 using Microsoft.Win32;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AgOpenGPS
@@ -59,12 +61,31 @@ namespace AgOpenGPS
                 Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(Properties.Settings.Default.setF_culture);
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+
+                StartDistanceDataReceiverAsync();
+
+                // Run the main form
                 Application.Run(new FormGPS());
             }
             else
             {
                 MessageBox.Show("AgOpenGPS is Already Running");
             }
+        }
+
+        private static async void StartDistanceDataReceiverAsync()
+        {
+            using (var receiver = new DistanceDataReceiver("DistancePipe"))
+            {
+                receiver.DistanceReceived += OnDistanceReceived;
+                await receiver.StartReceivingAsync();
+            }
+        }
+
+        private static void OnDistanceReceived(double distance)
+        {
+            // Process the distance data as needed
+            Console.WriteLine($"Received distance: {distance}");
         }
 
         //[System.Runtime.InteropServices.DllImport("user32.dll")]
