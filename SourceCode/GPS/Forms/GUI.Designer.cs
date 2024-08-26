@@ -1281,6 +1281,7 @@ namespace AgOpenGPS
                             }
                         }
 
+                        // HERE IS LOGIC FOR TURNING
                         //lateral
                         if (point.Y < 150 && point.Y > 90 && (trk.idx > -1))
                         {
@@ -1316,7 +1317,7 @@ namespace AgOpenGPS
                             }
                         }
                     }
-
+                    
                     //pan and hide menus
                     if (point.X > 30 && point.X < 60)
                     {
