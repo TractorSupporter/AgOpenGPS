@@ -14,6 +14,9 @@ namespace AgOpenGPS
         /// The main entry point for the application.
         /// </summary>
         private static readonly Mutex Mutex = new Mutex(true, "{516-0AC5-B9A1-55fd-A8CE-72F04E6BDE8F}");
+        private static FormGPS formGPS;
+        private static int AvoidCommandDelayTime = 4000;
+        private static UnblockCommandsDataSender _unblockCommandsDataSender;
 
         [STAThread]
         private static void Main()
@@ -62,14 +65,29 @@ namespace AgOpenGPS
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
+                _unblockCommandsDataSender = new UnblockCommandsDataSender("UnblockCommandsPipe");
+                formGPS = new FormGPS();
+
                 StartDistanceDataReceiverAsync();
+                StartCommandsDataReceiverAsync();
 
                 // Run the main form
-                Application.Run(new FormGPS());
+                Application.Run(formGPS);
             }
             else
             {
                 MessageBox.Show("AgOpenGPS is Already Running");
+            }
+        }
+
+        private static async void StartCommandsDataReceiverAsync()
+        {
+            using (var receiver = new CommandsDataReceiver("CommandsPipe"))
+            {
+                receiver.AvoidCommandReceived += OnAvoidCommandReceived;
+                receiver.AlarmCommandReceived += OnAlarmCommandReceived;
+
+                await receiver.StartReceivingAsync();
             }
         }
 
@@ -80,6 +98,34 @@ namespace AgOpenGPS
                 receiver.DistanceReceived += OnDistanceReceived;
                 await receiver.StartReceivingAsync();
             }
+        }
+
+        private static void OnAlarmCommandReceived()
+        {
+            // Process the distance data as needed
+            Console.WriteLine($"Received command: alarm");
+        }
+        
+        private static void OnAvoidCommandReceived()
+        {
+            // Process the distance data as needed
+            Console.WriteLine($"Received command: avoid");
+            if (formGPS.isLateralOn)
+            {
+                formGPS.yt.BuildManualYouLateral(true);
+                formGPS.yt.ResetYouTurn();
+                
+                Console.WriteLine("before xd");
+                Task.Run(() => DelayAndUnlockAvoidCommand());
+            }
+        }
+
+        private static async Task DelayAndUnlockAvoidCommand()
+        {
+            await Task.Delay(AvoidCommandDelayTime);
+
+            _unblockCommandsDataSender.SendAvoidingCommandUnblock();
+            Console.WriteLine("xd");
         }
 
         private static void OnDistanceReceived(double distance)
