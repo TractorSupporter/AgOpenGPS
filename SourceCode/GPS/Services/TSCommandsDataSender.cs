@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace AgOpenGPS.Services
 {
-    public class UnblockCommandsDataSender
+    public class TSCommandsDataSender
     {
         private readonly string _pipeName;
         private NamedPipeClientStream _pipeClient;
@@ -13,7 +13,7 @@ namespace AgOpenGPS.Services
         private const int MaxRetryAttempts = 8;
         private const int RetryDelayMilliseconds = 1000;
 
-        public UnblockCommandsDataSender(string pipeName)
+        public TSCommandsDataSender(string pipeName)
         {
             _pipeName = pipeName;
             ConnectToPipe();
@@ -26,13 +26,13 @@ namespace AgOpenGPS.Services
             _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
         }
 
-        public void SendAvoidingCommandUnblock()
+        public void SendCommandData(string data)
         {
             if (_pipeClient.IsConnected)
             {
                 try
                 {
-                    string message = "unblock_avoid";
+                    string message = data;
                     _writer.WriteLine(message);
                 }
                 catch (IOException ex)

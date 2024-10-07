@@ -656,7 +656,7 @@
     </Compile>
     <Compile Include="Services\CommandsDataReceiver.cs" />
     <Compile Include="Services\DistanceDataReceiver.cs" />
-    <Compile Include="Services\UnblockCommandsDataSender.cs" />
+    <Compile Include="Services\TSCommandsDataSender.cs" />
     <Compile Include="Settings.cs" />
     <EmbeddedResource Include="Forms\Field\FormEnterFlag.resx">
       <DependentUpon>FormEnterFlag.cs</DependentUpon>

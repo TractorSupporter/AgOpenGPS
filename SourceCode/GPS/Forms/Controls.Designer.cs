@@ -18,6 +18,10 @@ namespace AgOpenGPS
 {
     public partial class FormGPS
     {
+        #region TS Addon
+        public event Action<string> TSCommandStateChange;
+        #endregion
+
         #region Right Menu
         public bool isABCyled = false;
         private void btnContour_Click(object sender, EventArgs e)
@@ -1614,6 +1618,10 @@ namespace AgOpenGPS
         private void btnAutoTrack_Click(object sender, EventArgs e)
         {
             trk.isAutoTrack = !trk.isAutoTrack;
+            if (trk.isAutoTrack)
+                TSCommandStateChange?.Invoke("start_avoid");
+            else
+                TSCommandStateChange?.Invoke("stop_avoid");
             btnAutoTrack.Image = trk.isAutoTrack ? Resources.AutoTrack : Resources.AutoTrackOff;            
         }
 

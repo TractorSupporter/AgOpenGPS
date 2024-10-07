@@ -16,7 +16,7 @@ namespace AgOpenGPS
         private static readonly Mutex Mutex = new Mutex(true, "{516-0AC5-B9A1-55fd-A8CE-72F04E6BDE8F}");
         private static FormGPS formGPS;
         private static int AvoidCommandDelayTime = 4000;
-        private static UnblockCommandsDataSender _unblockCommandsDataSender;
+        private static TSCommandsDataSender commandsTSDataSender;
 
         [STAThread]
         private static void Main()
@@ -65,8 +65,9 @@ namespace AgOpenGPS
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                _unblockCommandsDataSender = new UnblockCommandsDataSender("UnblockCommandsPipe");
+                commandsTSDataSender = new TSCommandsDataSender("UnblockCommandsPipe");
                 formGPS = new FormGPS();
+                formGPS.TSCommandStateChange += OnTSCommandStateChange;
 
                 StartDistanceDataReceiverAsync();
                 StartCommandsDataReceiverAsync();
@@ -78,6 +79,11 @@ namespace AgOpenGPS
             {
                 MessageBox.Show("AgOpenGPS is Already Running");
             }
+        }
+
+        private static void OnTSCommandStateChange(string data)
+        {
+            commandsTSDataSender.SendCommandData(data);
         }
 
         private static async void StartCommandsDataReceiverAsync()
@@ -114,8 +120,7 @@ namespace AgOpenGPS
             {
                 formGPS.yt.BuildManualYouLateral(true);
                 formGPS.yt.ResetYouTurn();
-                
-                Console.WriteLine("before xd");
+
                 Task.Run(() => DelayAndUnlockAvoidCommand());
             }
         }
@@ -124,8 +129,7 @@ namespace AgOpenGPS
         {
             await Task.Delay(AvoidCommandDelayTime);
 
-            _unblockCommandsDataSender.SendAvoidingCommandUnblock();
-            Console.WriteLine("xd");
+            commandsTSDataSender.SendCommandData("unblock_avoid");
         }
 
         private static void OnDistanceReceived(double distance)
