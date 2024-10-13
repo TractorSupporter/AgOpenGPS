@@ -5,17 +5,16 @@ using System.Threading;
 
 namespace AgOpenGPS.Services
 {
-    public class TSCommandsDataSender
+    public partial class TSDataSender
     {
-        private readonly string _pipeName;
+        private readonly string _pipeName = "ts_pipe_from_gps";
         private NamedPipeClientStream _pipeClient;
         private StreamWriter _writer;
         private const int MaxRetryAttempts = 8;
         private const int RetryDelayMilliseconds = 1000;
 
-        public TSCommandsDataSender(string pipeName)
+        private TSDataSender()
         {
-            _pipeName = pipeName;
             ConnectToPipe();
         }
 
@@ -26,7 +25,7 @@ namespace AgOpenGPS.Services
             _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
         }
 
-        public void SendCommandData(string data)
+        public void SendData(string data)
         {
             if (_pipeClient.IsConnected)
             {
@@ -38,17 +37,17 @@ namespace AgOpenGPS.Services
                 catch (IOException ex)
                 {
                     Console.WriteLine("Pipe is broken: " + ex.Message);
-                    RetrySendCommand();
+                    RetrySendData();
                 }
             }
             else
             {
                 Console.WriteLine("Pipe is not connected.");
-                RetrySendCommand();
+                RetrySendData();
             }
         }
 
-        private void RetrySendCommand()
+        private void RetrySendData()
         {
             for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
             {
@@ -70,6 +69,13 @@ namespace AgOpenGPS.Services
 
             Console.WriteLine("Failed to reconnect after multiple attempts.");
         }
+    }
+
+    #region Class structure
+    public partial class TSDataSender: IDisposable
+    {
+        public static TSDataSender Instance => _lazyInstance.Value;
+        private static readonly Lazy<TSDataSender> _lazyInstance = new Lazy<TSDataSender>(() => new TSDataSender());
 
         public void Dispose()
         {
@@ -77,4 +83,5 @@ namespace AgOpenGPS.Services
             _pipeClient?.Dispose();
         }
     }
+    #endregion
 }

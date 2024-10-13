@@ -655,8 +655,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Services\CommandsDataReceiver.cs" />
-    <Compile Include="Services\DistanceDataReceiver.cs" />
-    <Compile Include="Services\TSCommandsDataSender.cs" />
+    <Compile Include="Services\TSDataReceiver.cs" />
+    <Compile Include="Services\TSDataSender.cs" />
     <Compile Include="Settings.cs" />
     <EmbeddedResource Include="Forms\Field\FormEnterFlag.resx">
       <DependentUpon>FormEnterFlag.cs</DependentUpon>

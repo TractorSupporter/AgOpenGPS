@@ -9,16 +9,17 @@ using System.Globalization;
 
 namespace AgOpenGPS.Services
 {
-    public class DistanceDataReceiver : IDisposable
+    public partial class TSDataReceiver
     {
+        private readonly string _pipeName = "ts_pipe_to_gps";
         private readonly NamedPipeServerStream _pipeServer;
         private readonly StreamReader _reader;
         public event Action<double> DistanceReceived;
         CultureInfo culture = new CultureInfo("fr-FR");
 
-        public DistanceDataReceiver(string pipeName)
+        private TSDataReceiver()
         {
-            _pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In);
+            _pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In);
             _reader = new StreamReader(_pipeServer);
         }
 
@@ -39,8 +40,12 @@ namespace AgOpenGPS.Services
                 }
             }
         }
+    }
 
-        
+    public partial class TSDataReceiver : IDisposable
+    {
+        private static readonly Lazy<TSDataReceiver> _lazyInstance = new Lazy<TSDataReceiver>(() => new TSDataReceiver());
+        public static TSDataReceiver Instance => _lazyInstance.Value;
 
         public void Dispose()
         {

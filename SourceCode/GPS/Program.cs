@@ -16,7 +16,7 @@ namespace AgOpenGPS
         private static readonly Mutex Mutex = new Mutex(true, "{516-0AC5-B9A1-55fd-A8CE-72F04E6BDE8F}");
         private static FormGPS formGPS;
         private static int AvoidCommandDelayTime = 4000;
-        private static TSCommandsDataSender commandsTSDataSender;
+        private static TSDataSender dataSenderTS;
 
         [STAThread]
         private static void Main()
@@ -65,12 +65,12 @@ namespace AgOpenGPS
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                commandsTSDataSender = new TSCommandsDataSender("UnblockCommandsPipe");
+                dataSenderTS = TSDataSender.Instance;
                 formGPS = new FormGPS();
                 formGPS.TSCommandStateChange += OnTSCommandStateChange;
 
-                StartDistanceDataReceiverAsync();
-                StartCommandsDataReceiverAsync();
+                StartTSDataReceiverAsync();
+                //StartCommandsDataReceiverAsync();
 
                 // Run the main form
                 Application.Run(formGPS);
@@ -83,27 +83,25 @@ namespace AgOpenGPS
 
         private static void OnTSCommandStateChange(string data)
         {
-            commandsTSDataSender.SendCommandData(data);
+            dataSenderTS.SendData(data);
         }
 
-        private static async void StartCommandsDataReceiverAsync()
-        {
-            using (var receiver = new CommandsDataReceiver("CommandsPipe"))
-            {
-                receiver.AvoidCommandReceived += OnAvoidCommandReceived;
-                receiver.AlarmCommandReceived += OnAlarmCommandReceived;
+        //private static async void StartCommandsDataReceiverAsync()
+        //{
+        //    using (var receiver = new CommandsDataReceiver("CommandsPipe"))
+        //    {
+        //        receiver.AvoidCommandReceived += OnAvoidCommandReceived;
+        //        receiver.AlarmCommandReceived += OnAlarmCommandReceived;
 
-                await receiver.StartReceivingAsync();
-            }
-        }
+        //        await receiver.StartReceivingAsync();
+        //    }
+        //}
 
-        private static async void StartDistanceDataReceiverAsync()
+        private static async void StartTSDataReceiverAsync()
         {
-            using (var receiver = new DistanceDataReceiver("DistancePipe"))
-            {
-                receiver.DistanceReceived += OnDistanceReceived;
-                await receiver.StartReceivingAsync();
-            }
+            var receiver = TSDataReceiver.Instance;
+            receiver.DistanceReceived += OnDistanceReceived;
+            await receiver.StartReceivingAsync();
         }
 
         private static void OnAlarmCommandReceived()
@@ -129,7 +127,7 @@ namespace AgOpenGPS
         {
             await Task.Delay(AvoidCommandDelayTime);
 
-            commandsTSDataSender.SendCommandData("unblock_avoid");
+            dataSenderTS.SendData("unblock_avoid");
         }
 
         private static void OnDistanceReceived(double distance)
