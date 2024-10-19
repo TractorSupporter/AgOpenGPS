@@ -19,7 +19,8 @@ namespace AgOpenGPS
     public partial class FormGPS
     {
         #region TS Addon
-        public event Action<string> TSCommandStateChange;
+        public static bool _isAvoidingAllowed = false;
+        public event Action<bool> AvoidingCommandStateChangeTS;
         #endregion
 
         #region Right Menu
@@ -53,7 +54,7 @@ namespace AgOpenGPS
             }
 
             PanelUpdateRightAndBottom();
-        }                
+        }
         private void btnContourLock_Click(object sender, EventArgs e)
         {
             if (ct.isContourBtnOn)
@@ -61,10 +62,12 @@ namespace AgOpenGPS
                 ct.SetLockToLine();
             }
         }
+
         public void SetContourLockImage(bool isOn)
         {
             btnContourLock.Image = isOn ? Resources.ColorLocked : Resources.ColorUnlocked;
         }
+
         private void btnTrack_Click(object sender, EventArgs e)
         {
             //if contour is on, turn it off
@@ -132,6 +135,7 @@ namespace AgOpenGPS
 
             PanelUpdateRightAndBottom();
         }
+
         private void btnAutoSteer_Click(object sender, EventArgs e)
         {
             longAvgPivDistance = 0;
@@ -143,6 +147,8 @@ namespace AgOpenGPS
                 //if (yt.isYouTurnBtnOn) btnAutoYouTurn.PerformClick();
                 if (sounds.isSteerSoundOn) sounds.sndAutoSteerOff.Play();
                 //trk.isAutoSnapped = false;
+
+                AvoidingCommandStateChangeTS?.Invoke(false);
             }
             else
             {
@@ -156,12 +162,15 @@ namespace AgOpenGPS
                     //    trk.SnapToPivot();
                     //    trk.isAutoSnapped = true;   
                     //}
+                    AvoidingCommandStateChangeTS?.Invoke(true);
                 }
                 else
                 {
                     var form = new FormTimedMessage(2000, (gStr.gsNoGuidanceLines), (gStr.gsTurnOnContourOrMakeABLine));
                     form.Show(this);
                 }
+
+
             }
         }
         private void btnAutoYouTurn_Click(object sender, EventArgs e)
@@ -1618,10 +1627,7 @@ namespace AgOpenGPS
         private void btnAutoTrack_Click(object sender, EventArgs e)
         {
             trk.isAutoTrack = !trk.isAutoTrack;
-            if (trk.isAutoTrack)
-                TSCommandStateChange?.Invoke("start_avoid");
-            else
-                TSCommandStateChange?.Invoke("stop_avoid");
+            
             btnAutoTrack.Image = trk.isAutoTrack ? Resources.AutoTrack : Resources.AutoTrackOff;            
         }
 

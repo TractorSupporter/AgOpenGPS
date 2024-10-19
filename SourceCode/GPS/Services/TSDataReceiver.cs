@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using Newtonsoft.Json.Linq;
 
 namespace AgOpenGPS.Services
 {
@@ -15,6 +16,7 @@ namespace AgOpenGPS.Services
         private readonly NamedPipeServerStream _pipeServer;
         private readonly StreamReader _reader;
         public event Action<double> DistanceReceived;
+        public event Action AvoidingDecisionMade;
         CultureInfo culture = new CultureInfo("fr-FR");
 
         private TSDataReceiver()
@@ -28,15 +30,21 @@ namespace AgOpenGPS.Services
             _pipeServer.WaitForConnection();
             while (_pipeServer.IsConnected)
             {
-                string message = await _reader.ReadLineAsync();
+                JObject data = JObject.Parse(await _reader.ReadLineAsync());
 
-                if (double.TryParse(message, NumberStyles.Any, culture, out double distance))
+                if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
                 {
-                    DistanceReceived?.Invoke(distance);
+                    bool shouldAvoid = shouldAvoidToken.Value<bool>();
+                    if (shouldAvoid)
+                        AvoidingDecisionMade?.Invoke();
+                }
+                if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
+                {
+                    DistanceReceived?.Invoke(distanceMeasuredToken.Value<double>());
                 }
                 else
                 {
-                    Console.WriteLine("Failed to parse the input string.");
+                    Console.WriteLine("Failed to parse the input elements.");
                 }
             }
         }

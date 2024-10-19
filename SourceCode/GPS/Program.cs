@@ -67,7 +67,7 @@ namespace AgOpenGPS
 
                 dataSenderTS = TSDataSender.Instance;
                 formGPS = new FormGPS();
-                formGPS.TSCommandStateChange += OnTSCommandStateChange;
+                formGPS.AvoidingCommandStateChangeTS += OnAvoidingCommandStateChangeTS;
 
                 StartTSDataReceiverAsync();
                 //StartCommandsDataReceiverAsync();
@@ -81,9 +81,18 @@ namespace AgOpenGPS
             }
         }
 
-        private static void OnTSCommandStateChange(string data)
+        
+
+        private static void OnAvoidingCommandStateChangeTS(bool shouldAllowAvoidingDecision)
         {
-            dataSenderTS.SendData(data);
+            if (FormGPS._isAvoidingAllowed == shouldAllowAvoidingDecision) return;
+
+            dataSenderTS.SendData(new
+            {
+                allowAvoidingDecision = shouldAllowAvoidingDecision
+            });
+
+            FormGPS._isAvoidingAllowed = shouldAllowAvoidingDecision;
         }
 
         //private static async void StartCommandsDataReceiverAsync()
@@ -101,7 +110,19 @@ namespace AgOpenGPS
         {
             var receiver = TSDataReceiver.Instance;
             receiver.DistanceReceived += OnDistanceReceived;
+            receiver.AvoidingDecisionMade += OnAvoidingDecisionMade;
             await receiver.StartReceivingAsync();
+        }
+
+        private static void OnAvoidingDecisionMade()
+        {
+            if (formGPS.isLateralOn)
+            {
+                formGPS.yt.BuildManualYouLateral(true);
+                formGPS.yt.ResetYouTurn();
+
+                
+            }
         }
 
         private static void OnAlarmCommandReceived()
@@ -110,24 +131,21 @@ namespace AgOpenGPS
             Console.WriteLine($"Received command: alarm");
         }
         
-        private static void OnAvoidCommandReceived()
-        {
-            // Process the distance data as needed
-            Console.WriteLine($"Received command: avoid");
-            if (formGPS.isLateralOn)
-            {
-                formGPS.yt.BuildManualYouLateral(true);
-                formGPS.yt.ResetYouTurn();
-
-                Task.Run(() => DelayAndUnlockAvoidCommand());
-            }
-        }
+        //private static void OnAvoidCommandReceived()
+        //{
+        //    // Process the distance data as needed
+        //    Console.WriteLine($"Received command: avoid");
+            
+        //}
 
         private static async Task DelayAndUnlockAvoidCommand()
-        {
+        { // TODO change this delay to sth that makes more sense
             await Task.Delay(AvoidCommandDelayTime);
 
-            dataSenderTS.SendData("unblock_avoid");
+            dataSenderTS.SendData(new
+                {
+                    allowAvoidingDecision = true
+                });
         }
 
         private static void OnDistanceReceived(double distance)

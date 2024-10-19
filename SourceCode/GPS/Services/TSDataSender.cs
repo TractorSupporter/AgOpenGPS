@@ -2,11 +2,13 @@
 using System.IO.Pipes;
 using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace AgOpenGPS.Services
 {
     public partial class TSDataSender
     {
+        private string message = string.Empty;
         private readonly string _pipeName = "ts_pipe_from_gps";
         private NamedPipeClientStream _pipeClient;
         private StreamWriter _writer;
@@ -25,13 +27,14 @@ namespace AgOpenGPS.Services
             _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
         }
 
-        public void SendData(string data)
+        public void SendData(object data)
         {
+            message = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+
             if (_pipeClient.IsConnected)
             {
                 try
                 {
-                    string message = data;
                     _writer.WriteLine(message);
                 }
                 catch (IOException ex)
@@ -55,7 +58,6 @@ namespace AgOpenGPS.Services
                 {
                     Console.WriteLine($"Attempting to reconnect... (Attempt {attempt})");
                     ConnectToPipe();
-                    string message = "unblock_avoid";
                     _writer.WriteLine(message);
                     Console.WriteLine("Reconnected and sent data successfully.");
                     return;
