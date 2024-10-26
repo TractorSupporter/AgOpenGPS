@@ -2,6 +2,7 @@
 
 using AgOpenGPS;
 using AgOpenGPS.Properties;
+using AgOpenGPS.Services;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
@@ -238,6 +239,8 @@ namespace AgOpenGPS
         /// <summary>
         /// The new brightness code
         /// </summary>
+        /// 
+        public AlarmService alarmService;
 
         private void panelRight_Paint(object sender, PaintEventArgs e)
         {
@@ -347,6 +350,8 @@ namespace AgOpenGPS
 
             //shape file object
             shape = new ShapeFile(this);
+
+            alarmService = AlarmService.Initialize(this);
         }
 
         private void FormGPS_Load(object sender, EventArgs e)

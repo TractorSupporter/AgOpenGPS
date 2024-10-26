@@ -70,7 +70,7 @@ namespace AgOpenGPS
                 formGPS = new FormGPS();
                 formGPS.AvoidingCommandStateChangeTS += OnAvoidingCommandStateChangeTS;
 
-                alarmService = AlarmService.Instance(formGPS);
+                alarmService = AlarmService.Instance;
 
                 StartTSDataReceiverAsync();
                 //StartCommandsDataReceiverAsync();

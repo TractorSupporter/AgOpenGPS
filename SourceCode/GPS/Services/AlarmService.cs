@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using OpenTK.Graphics.OpenGL;
+using System.Drawing;
 
 namespace AgOpenGPS.Services
 {
@@ -13,27 +9,28 @@ namespace AgOpenGPS.Services
     {
         private Timer _alarmTimer;
         private static FormGPS _formGPS;
-        public static bool isAlarmPlaying {get; set;}
-        public static bool isRed { get; set; }
+        public bool IsAlarmPlaying {get; set;}
+        public bool IsRed { get; set; }
 
         private AlarmService(FormGPS formGPS)
         {
-            isRed = true;
+            IsRed = true;
             _formGPS = formGPS;
             _alarmTimer = new Timer();
             _alarmTimer.Interval = 1000;
             _alarmTimer.Tick += AlarmTimer_Tick;
+            
         }
 
         private void AlarmTimer_Tick(object sender, EventArgs e)
         {
             _formGPS.sounds.obstacleAlarm.Play();
-            isRed = !isRed;
+            IsRed = !IsRed;
         }
 
         public void PlayAlarm()
         {
-            isAlarmPlaying = true;
+            IsAlarmPlaying = true;
             if (!_alarmTimer.Enabled)
             {
                 _alarmTimer.Start();
@@ -42,25 +39,46 @@ namespace AgOpenGPS.Services
 
         public void StopAlarm()
         {
-            isAlarmPlaying = false;
+            IsAlarmPlaying = false;
             if (_alarmTimer.Enabled)
             {
                 _alarmTimer.Stop();
             }
         }
-    }
 
-    public partial class AlarmService
-    {
-        private static AlarmService _instance;
-
-        public static AlarmService Instance(FormGPS formGPS)
+        public Color getAlertColor()
         {
-            if (_instance == null)
-            {
-                _instance = new AlarmService(formGPS);
-            }
-            return _instance;
+            return IsRed ? Color.FromArgb(255, 255, 0, 0) : Color.FromArgb(255, 255, 128, 0);
         }
     }
+
+    #region Class structure
+    public partial class AlarmService
+    {
+        private static Lazy<AlarmService> _lazyInstance = null;
+
+        public static AlarmService Initialize(FormGPS formGps)
+        {
+            if (_lazyInstance == null)
+            {
+                _lazyInstance = new Lazy<AlarmService>(() => new AlarmService(formGps));
+            }
+
+            return _lazyInstance.Value;
+        }
+
+        public static AlarmService Instance
+        {
+            get
+            {
+                if (_lazyInstance == null)
+                {
+                    throw new Exception("AlarmService not initialized");
+                }
+
+                return _lazyInstance.Value;
+            }
+        }
+    }
+    #endregion
 }

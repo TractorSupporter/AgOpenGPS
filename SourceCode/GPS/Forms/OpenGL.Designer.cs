@@ -417,13 +417,10 @@ namespace AgOpenGPS
 
                     if (trk.idx >-1) DrawGuidanceLineText();
 
-                    if (AlarmService.isAlarmPlaying)
+                    if (alarmService.IsAlarmPlaying)
                     {
-                        GL.Color3(1.0f, 0.0f, 0.0f);
-                        if (!AlarmService.isRed)
-                        {
-                            GL.Color3(1.0f, 0.5f, 0.0f);
-                        }
+                        Color alertColor = alarmService.getAlertColor();
+                        GL.Color3(alertColor.R / 255.0f, alertColor.G / 255.0f, alertColor.B / 255.0f);
                         GL.Begin(PrimitiveType.Quads);
                         GL.Vertex2(-300, 100);
                         GL.Vertex2(300, 100);
