@@ -17,6 +17,7 @@ namespace AgOpenGPS
         private static FormGPS formGPS;
         private static int AvoidCommandDelayTime = 4000;
         private static TSDataSender dataSenderTS;
+        private static AlarmService alarmService;
 
         [STAThread]
         private static void Main()
@@ -69,6 +70,8 @@ namespace AgOpenGPS
                 formGPS = new FormGPS();
                 formGPS.AvoidingCommandStateChangeTS += OnAvoidingCommandStateChangeTS;
 
+                alarmService = AlarmService.Instance;
+
                 StartTSDataReceiverAsync();
                 //StartCommandsDataReceiverAsync();
 
@@ -111,6 +114,8 @@ namespace AgOpenGPS
             var receiver = TSDataReceiver.Instance;
             receiver.DistanceReceived += OnDistanceReceived;
             receiver.AvoidingDecisionMade += OnAvoidingDecisionMade;
+            receiver.AlarmCommandReceived += OnAlarmCommandReceived;
+            receiver.AlarmCommandNotReceived += OnAlarmCommandNotReceived;
             await receiver.StartReceivingAsync();
         }
 
@@ -120,15 +125,17 @@ namespace AgOpenGPS
             {
                 formGPS.yt.BuildManualYouLateral(true);
                 formGPS.yt.ResetYouTurn();
-
-                
             }
         }
 
         private static void OnAlarmCommandReceived()
         {
-            // Process the distance data as needed
-            Console.WriteLine($"Received command: alarm");
+            alarmService.PlayAlarm();
+        }
+
+        private static void OnAlarmCommandNotReceived()
+        {
+            alarmService.StopAlarm();
         }
         
         //private static void OnAvoidCommandReceived()

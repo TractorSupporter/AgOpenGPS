@@ -17,6 +17,8 @@ namespace AgOpenGPS.Services
         private readonly StreamReader _reader;
         public event Action<double> DistanceReceived;
         public event Action AvoidingDecisionMade;
+        public event Action AlarmCommandReceived;
+        public event Action AlarmCommandNotReceived;
         CultureInfo culture = new CultureInfo("fr-FR");
 
         private TSDataReceiver()
@@ -41,6 +43,13 @@ namespace AgOpenGPS.Services
                 if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
                 {
                     DistanceReceived?.Invoke(distanceMeasuredToken.Value<double>());
+                }
+                if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
+                {
+                    bool shouldAlarm = shouldAlarmToken.Value<bool>();
+                    if (shouldAlarm)
+                        AlarmCommandReceived?.Invoke();
+                    else AlarmCommandNotReceived?.Invoke();
                 }
                 else
                 {

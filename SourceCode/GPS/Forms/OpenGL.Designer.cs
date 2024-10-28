@@ -3,6 +3,9 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System.Windows.Forms;
 using System.Text;
+using AgOpenGPS.Services;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace AgOpenGPS
 {
@@ -413,6 +416,22 @@ namespace AgOpenGPS
                     if (pn.age > pn.ageAlarm) DrawAge();
 
                     if (trk.idx >-1) DrawGuidanceLineText();
+
+                    if (alarmService.IsAlarmPlaying)
+                    {
+                        Color alertColor = alarmService.getAlertColor();
+                        GL.Color3(alertColor.R / 255.0f, alertColor.G / 255.0f, alertColor.B / 255.0f);
+                        GL.Begin(PrimitiveType.Quads);
+                        GL.Vertex2(-300, 100);
+                        GL.Vertex2(300, 100);
+                        GL.Vertex2(300, 300);
+                        GL.Vertex2(-300, 300);
+                        GL.End();
+
+                        GL.Color3(0.0f, 0.0f, 0.0f);
+                        font.DrawText(-250, 165, "You are coming into an obstacle!");
+                    }
+                    
 
                     //just in case
                     GL.Disable(EnableCap.LineStipple);
