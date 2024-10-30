@@ -659,6 +659,7 @@
     </Compile>
     <Compile Include="Services\AlarmService.cs" />
     <Compile Include="Services\CommandsDataReceiver.cs" />
+    <Compile Include="Services\PlaceFlagService.cs" />
     <Compile Include="Services\TSDataReceiver.cs" />
     <Compile Include="Services\TSDataSender.cs" />
     <Compile Include="Settings.cs" />

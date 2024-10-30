@@ -11,10 +11,12 @@ namespace AgOpenGPS.Services
         private static FormGPS _formGPS;
         public bool IsAlarmPlaying {get; set;}
         public bool IsRed { get; set; }
+        public PlaceFlagService _placeFlagService;
 
         private AlarmService(FormGPS formGPS)
         {
             IsRed = true;
+            _placeFlagService = PlaceFlagService.Instance;
             _formGPS = formGPS;
             _alarmTimer = new Timer();
             _alarmTimer.Interval = 1000;
@@ -28,11 +30,16 @@ namespace AgOpenGPS.Services
             IsRed = !IsRed;
         }
 
-        public void PlayAlarm()
+        public void PlayAlarm(double distance)
         {
             IsAlarmPlaying = true;
             if (!_alarmTimer.Enabled)
             {
+                double distanceInMeters = distance / 100;
+                double newEasting = _formGPS.pn.fix.easting + distanceInMeters * _formGPS.sinSectionHeading;
+                double newNorthing = _formGPS.pn.fix.northing + distanceInMeters * _formGPS.cosSectionHeading;
+
+                _placeFlagService.placeFlag(_formGPS, _formGPS.flagPts, _formGPS.pn, _formGPS.fixHeading, _formGPS.flagColor, newEasting, newNorthing);
                 _alarmTimer.Start();
             }
         }
