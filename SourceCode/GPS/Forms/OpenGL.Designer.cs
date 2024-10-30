@@ -422,14 +422,14 @@ namespace AgOpenGPS
                         Color alertColor = alarmService.getAlertColor();
                         GL.Color3(alertColor.R / 255.0f, alertColor.G / 255.0f, alertColor.B / 255.0f);
                         GL.Begin(PrimitiveType.Quads);
-                        GL.Vertex2(-300, 100);
-                        GL.Vertex2(300, 100);
-                        GL.Vertex2(300, 300);
-                        GL.Vertex2(-300, 300);
+                        GL.Vertex2(-300, 340);
+                        GL.Vertex2(300, 340);
+                        GL.Vertex2(300, 480);
+                        GL.Vertex2(-300, 480);
                         GL.End();
 
                         GL.Color3(0.0f, 0.0f, 0.0f);
-                        font.DrawText(-250, 165, "You are coming into an obstacle!");
+                        font.DrawText(-250, 400, "You are coming into an obstacle!");
                     }
                     
 

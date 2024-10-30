@@ -18,6 +18,7 @@ namespace AgOpenGPS
         private static int AvoidCommandDelayTime = 4000;
         private static TSDataSender dataSenderTS;
         private static AlarmService alarmService;
+        private static double distanceToObstacle;
 
         [STAThread]
         private static void Main()
@@ -130,7 +131,7 @@ namespace AgOpenGPS
 
         private static void OnAlarmCommandReceived()
         {
-            alarmService.PlayAlarm();
+            alarmService.PlayAlarm(distanceToObstacle);
         }
 
         private static void OnAlarmCommandNotReceived()
@@ -157,8 +158,7 @@ namespace AgOpenGPS
 
         private static void OnDistanceReceived(double distance)
         {
-            // Process the distance data as needed
-            Console.WriteLine($"Received distance: {distance}");
+            distanceToObstacle = distance;
         }
 
         //[System.Runtime.InteropServices.DllImport("user32.dll")]
