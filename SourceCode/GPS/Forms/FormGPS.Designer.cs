@@ -1,4 +1,6 @@
-﻿namespace AgOpenGPS
+﻿using System.Drawing;
+
+namespace AgOpenGPS
 {
     partial class FormGPS
     {
@@ -156,6 +158,7 @@
             this.btnNavigationSettings = new System.Windows.Forms.Button();
             this.btnAutoSteerConfig = new System.Windows.Forms.Button();
             this.btnStartAgIO = new System.Windows.Forms.Button();
+            this.btnStartTractorSupporter = new System.Windows.Forms.Button();
             this.btnJobMenu = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripBtnFieldTools = new System.Windows.Forms.ToolStripDropDownButton();
@@ -1835,12 +1838,13 @@
             this.panelLeft.Controls.Add(this.btnNavigationSettings, 0, 0);
             this.panelLeft.Controls.Add(this.btnAutoSteerConfig, 0, 5);
             this.panelLeft.Controls.Add(this.btnStartAgIO, 0, 6);
+            this.panelLeft.Controls.Add(this.btnStartTractorSupporter, 0, 7);
             this.panelLeft.Controls.Add(this.statusStripLeft, 0, 1);
             this.panelLeft.Controls.Add(this.btnJobMenu, 0, 2);
             this.panelLeft.Controls.Add(this.statusStrip1, 0, 3);
             this.panelLeft.Location = new System.Drawing.Point(3, 53);
             this.panelLeft.Name = "panelLeft";
-            this.panelLeft.RowCount = 7;
+            this.panelLeft.RowCount = 8;
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 64F));
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20.26266F));
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15.197F));
@@ -1848,7 +1852,8 @@
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 17.43421F));
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14.63816F));
             this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14.47368F));
-            this.panelLeft.Size = new System.Drawing.Size(72, 597);
+            this.panelLeft.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14.47368F));
+            this.panelLeft.Size = new System.Drawing.Size(72, 660);
             this.panelLeft.TabIndex = 529;
             // 
             // btnConfig
@@ -1947,6 +1952,32 @@
             this.btnStartAgIO.TabIndex = 467;
             this.btnStartAgIO.UseVisualStyleBackColor = false;
             this.btnStartAgIO.Click += new System.EventHandler(this.btnStartAgIO_Click);
+            // 
+            // btnStartTractorSupporter
+            // 
+            this.btnStartTractorSupporter.BackColor = System.Drawing.Color.Transparent;
+            this.btnStartTractorSupporter.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnStartTractorSupporter.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnStartTractorSupporter.FlatAppearance.BorderColor = System.Drawing.Color.RoyalBlue;
+            this.btnStartTractorSupporter.FlatAppearance.BorderSize = 0;
+            this.btnStartTractorSupporter.FlatAppearance.CheckedBackColor = System.Drawing.Color.Transparent;
+            this.btnStartTractorSupporter.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnStartTractorSupporter.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnStartTractorSupporter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStartTractorSupporter.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnStartTractorSupporter.ForeColor = System.Drawing.Color.DarkGray;
+            Bitmap originalImage = (Bitmap)global::AgOpenGPS.Properties.Resources.TractorSupporter;
+            Bitmap resizedImage = new Bitmap(originalImage, new Size(110, 110));
+            this.btnStartTractorSupporter.Image = resizedImage;
+            this.btnStartTractorSupporter.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.btnStartTractorSupporter.Location = new System.Drawing.Point(0, 600);
+            this.btnStartTractorSupporter.Margin = new System.Windows.Forms.Padding(0);
+            this.btnStartTractorSupporter.Name = "btnStartTractorSupporter";
+            this.btnStartTractorSupporter.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.btnStartTractorSupporter.Size = new System.Drawing.Size(72, 79);
+            this.btnStartTractorSupporter.TabIndex = 468;
+            this.btnStartTractorSupporter.UseVisualStyleBackColor = false;
+            this.btnStartTractorSupporter.Click += new System.EventHandler(this.btnStartTractorSupporter_Click);
             // 
             // btnJobMenu
             // 
@@ -3078,6 +3109,7 @@
         private System.Windows.Forms.ToolStripDropDownButton distanceToolBtn;
         public System.Windows.Forms.Button btnDayNightMode;
         public System.Windows.Forms.Button btnStartAgIO;
+        public System.Windows.Forms.Button btnStartTractorSupporter;
         public System.Windows.Forms.Button btnPickPath;
         public System.Windows.Forms.Button btnPathRecordStop;
         public System.Windows.Forms.Button btnPathGoStop;

@@ -3,69 +3,72 @@ using System.IO.Pipes;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace AgOpenGPS.Services
 {
     public partial class TSDataSender
     {
-        private string message = string.Empty;
         private readonly string _pipeName = "ts_pipe_from_gps";
         private NamedPipeClientStream _pipeClient;
         private StreamWriter _writer;
         private const int MaxRetryAttempts = 8;
         private const int RetryDelayMilliseconds = 1000;
 
-        private TSDataSender()
-        {
-            ConnectToPipe();
-        }
+        private TSDataSender() {}
 
-        private void ConnectToPipe()
+        private async Task ConnectToPipeAsync()
         {
-            _pipeClient = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out);
-            _pipeClient.Connect();
+            _pipeClient = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out, PipeOptions.Asynchronous);
+            await _pipeClient.ConnectAsync();
             _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
         }
 
-        public void SendData(object data)
+        public async Task SendDataAsync(object data)
         {
-            message = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+            string message = Newtonsoft.Json.JsonConvert.SerializeObject(data);
 
-            if (_pipeClient.IsConnected)
+            if (_pipeClient == null || !_pipeClient.IsConnected)
             {
                 try
                 {
-                    _writer.WriteLine(message);
+                    await ConnectToPipeAsync();
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Pipe is broken: " + ex.Message);
-                    RetrySendData();
+                    Console.WriteLine("Failed to connect to pipe: " + ex.Message);
+                    // Optionally handle connection failure here
+                    return;
                 }
             }
-            else
+
+            try
             {
-                Console.WriteLine("Pipe is not connected.");
-                RetrySendData();
+                await _writer.WriteLineAsync(message);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine("Pipe is broken: " + ex.Message);
+                await RetrySendDataAsync(message);
             }
         }
 
-        private void RetrySendData()
+        private async Task RetrySendDataAsync(string message)
         {
             for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
             {
                 try
                 {
                     Console.WriteLine($"Attempting to reconnect... (Attempt {attempt})");
-                    ConnectToPipe();
-                    _writer.WriteLine(message);
+                    await ConnectToPipeAsync();
+                    await _writer.WriteLineAsync(message);
                     Console.WriteLine("Reconnected and sent data successfully.");
                     return;
                 }
                 catch (IOException ex)
                 {
                     Console.WriteLine($"Reconnection attempt {attempt} failed: {ex.Message}");
-                    Thread.Sleep(RetryDelayMilliseconds);
+                    await Task.Delay(RetryDelayMilliseconds);
                 }
             }
 
@@ -74,10 +77,10 @@ namespace AgOpenGPS.Services
     }
 
     #region Class structure
-    public partial class TSDataSender: IDisposable
+    public partial class TSDataSender : IDisposable
     {
-        public static TSDataSender Instance => _lazyInstance.Value;
         private static readonly Lazy<TSDataSender> _lazyInstance = new Lazy<TSDataSender>(() => new TSDataSender());
+        public static TSDataSender Instance => _lazyInstance.Value;
 
         public void Dispose()
         {

@@ -8,6 +8,8 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using AgOpenGPS.Forms;
 using AgOpenGPS.Forms.Pickers;
@@ -956,6 +958,29 @@ namespace AgOpenGPS
                 SetForegroundWindow(processName[0].MainWindowHandle);
             }
         }
+
+        private void btnStartTractorSupporter_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DirectoryInfo currentDir = new DirectoryInfo(Application.StartupPath);
+                DirectoryInfo targetDir = currentDir.Parent.Parent;
+                targetDir = new DirectoryInfo(Path.Combine(targetDir.FullName, "tractor-supporter-win", "TractorSupporter", "bin", "Debug"));
+                DirectoryInfo versionDir = targetDir.EnumerateDirectories("net8.0-windows").FirstOrDefault()
+                           ?? targetDir.EnumerateDirectories().FirstOrDefault();
+
+                if (versionDir != null)
+                {
+                    string wpfAppPath = Path.Combine(targetDir.FullName, versionDir.FullName, "TractorSupporter.exe");
+                    Process wpfAppProcess = Process.Start(wpfAppPath, "click_connect_button");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error launching TractorSupporter application: {ex.Message}");
+            }
+        }
+
         private void btnAutoSteerConfig_Click(object sender, EventArgs e)
         {
             //check if window already exists

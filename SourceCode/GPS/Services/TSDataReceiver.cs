@@ -29,7 +29,7 @@ namespace AgOpenGPS.Services
 
         public async Task StartReceivingAsync()
         {
-            _pipeServer.WaitForConnection();
+            _pipeServer.WaitForConnectionAsync();
             while (_pipeServer.IsConnected)
             {
                 JObject data = JObject.Parse(await _reader.ReadLineAsync());
