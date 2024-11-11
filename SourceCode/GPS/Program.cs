@@ -15,7 +15,6 @@ namespace AgOpenGPS
         /// </summary>
         private static readonly Mutex Mutex = new Mutex(true, "{516-0AC5-B9A1-55fd-A8CE-72F04E6BDE8F}");
         private static FormGPS formGPS;
-        private static int AvoidCommandDelayTime = 4000;
         private static TSDataSender dataSenderTS;
         private static AlarmService alarmService;
         private static double distanceToObstacle;
@@ -85,13 +84,11 @@ namespace AgOpenGPS
             }
         }
 
-        
-
         private static void OnAvoidingCommandStateChangeTS(bool shouldAllowAvoidingDecision)
         {
             if (FormGPS._isAvoidingAllowed == shouldAllowAvoidingDecision) return;
 
-            dataSenderTS.SendData(new
+            _ = dataSenderTS.SendData(new
             {
                 allowAvoidingDecision = shouldAllowAvoidingDecision
             });
@@ -113,10 +110,10 @@ namespace AgOpenGPS
         private static async void StartTSDataReceiverAsync()
         {
             var receiver = TSDataReceiver.Instance;
-            receiver.DistanceReceived += OnDistanceReceived;
-            receiver.AvoidingDecisionMade += OnAvoidingDecisionMade;
-            receiver.AlarmCommandReceived += OnAlarmCommandReceived;
-            receiver.AlarmCommandNotReceived += OnAlarmCommandNotReceived;
+            receiver.ReceivedDistanceMeasured += OnDistanceReceived;
+            receiver.ReceivedAvoidingDecision += OnAvoidingDecisionMade;
+            receiver.ReceivedAlarmDecision += OnAlarmCommandReceived;
+            receiver.ReceivedAlarmDecision += OnAlarmCommandNotReceived;
             await receiver.StartReceivingAsync();
         }
 
@@ -129,14 +126,16 @@ namespace AgOpenGPS
             }
         }
 
-        private static void OnAlarmCommandReceived()
+        private static void OnAlarmCommandReceived(bool shouldAlarm)
         {
-            alarmService.PlayAlarm(distanceToObstacle);
+            if (shouldAlarm)
+                alarmService.PlayAlarm(distanceToObstacle);
         }
 
-        private static void OnAlarmCommandNotReceived()
+        private static void OnAlarmCommandNotReceived(bool shouldAlarm)
         {
-            alarmService.StopAlarm();
+            if (!shouldAlarm)
+                alarmService.StopAlarm();
         }
         
         //private static void OnAvoidCommandReceived()
@@ -146,19 +145,10 @@ namespace AgOpenGPS
             
         //}
 
-        private static async Task DelayAndUnlockAvoidCommand()
-        { // TODO change this delay to sth that makes more sense
-            await Task.Delay(AvoidCommandDelayTime);
-
-            dataSenderTS.SendData(new
-                {
-                    allowAvoidingDecision = true
-                });
-        }
-
         private static void OnDistanceReceived(double distance)
         {
             distanceToObstacle = distance;
+            Console.WriteLine($"distance: {distance}");
         }
 
         //[System.Runtime.InteropServices.DllImport("user32.dll")]

@@ -12,62 +12,107 @@ namespace AgOpenGPS.Services
 {
     public partial class TSDataReceiver
     {
-        private readonly string _pipeName = "ts_pipe_to_gps";
-        private readonly NamedPipeServerStream _pipeServer;
-        private readonly StreamReader _reader;
-        public event Action<double> DistanceReceived;
-        public event Action AvoidingDecisionMade;
-        public event Action AlarmCommandReceived;
-        public event Action AlarmCommandNotReceived;
-        CultureInfo culture = new CultureInfo("fr-FR");
+        public event Action ReceivedAvoidingDecision;
+        public event Action<double> ReceivedDistanceMeasured;
+        public event Action<bool> ReceivedAlarmDecision;
+        private readonly TSConnectionService _tsConnectionService;
 
         private TSDataReceiver()
         {
-            _pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In);
-            _reader = new StreamReader(_pipeServer);
+            _tsConnectionService = TSConnectionService.Instance;
         }
 
         public async Task StartReceivingAsync()
         {
-            _pipeServer.WaitForConnection();
-            while (_pipeServer.IsConnected)
+            while (true)
             {
-                JObject data = JObject.Parse(await _reader.ReadLineAsync());
+                while (_tsConnectionService.IsConnectedToTS)
+                {
+                    try
+                    {
+                        JObject data = JObject.Parse(await _tsConnectionService.ReadFromPipe());
 
-                if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
-                {
-                    bool shouldAvoid = shouldAvoidToken.Value<bool>();
-                    if (shouldAvoid)
-                        AvoidingDecisionMade?.Invoke();
+                        if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
+                        {
+                            bool shouldAvoid = shouldAvoidToken.Value<bool>();
+                            if (shouldAvoid)
+                                ReceivedAvoidingDecision.Invoke();
+                        }
+                        if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
+                        {
+                            ReceivedDistanceMeasured.Invoke(distanceMeasuredToken.Value<double>());
+                        }
+                        if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
+                        {
+                            ReceivedAlarmDecision.Invoke(shouldAlarmToken.Value<bool>());
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to parse the input elements.");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _tsConnectionService.StayConnectedToTSAsync();
+                    }
                 }
-                if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
-                {
-                    DistanceReceived?.Invoke(distanceMeasuredToken.Value<double>());
-                }
-                if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
-                {
-                    bool shouldAlarm = shouldAlarmToken.Value<bool>();
-                    if (shouldAlarm)
-                        AlarmCommandReceived?.Invoke();
-                    else AlarmCommandNotReceived?.Invoke();
-                }
-                else
-                {
-                    Console.WriteLine("Failed to parse the input elements.");
-                }
+                
+
+                await _tsConnectionService.StayConnectedToTSAsync();
             }
         }
+
+
+        //    private readonly string _pipeName = "ts_pipe_to_gps";
+        //    private readonly NamedPipeServerStream _pipeServer;
+        //    private readonly StreamReader _reader;
+        //    public event Action<double> DistanceReceived;
+        //    public event Action AvoidingDecisionMade;
+        //    public event Action AlarmCommandReceived;
+        //    public event Action AlarmCommandNotReceived;
+        //    CultureInfo culture = new CultureInfo("fr-FR");
+
+        //    private TSDataReceiver()
+        //    {
+        //        _pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In);
+        //        _reader = new StreamReader(_pipeServer);
+        //    }
+
+        //    public async Task StartReceivingAsync()
+        //    {
+        //        _pipeServer.WaitForConnection();
+        //        while (_pipeServer.IsConnected)
+        //        {
+        //            JObject data = JObject.Parse(await _reader.ReadLineAsync());
+
+        //            if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
+        //            {
+        //                bool shouldAvoid = shouldAvoidToken.Value<bool>();
+        //                if (shouldAvoid)
+        //                    AvoidingDecisionMade?.Invoke();
+        //            }
+        //            if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
+        //            {
+        //                DistanceReceived?.Invoke(distanceMeasuredToken.Value<double>());
+        //            }
+        //            if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
+        //            {
+        //                bool shouldAlarm = shouldAlarmToken.Value<bool>();
+        //                if (shouldAlarm)
+        //                    AlarmCommandReceived?.Invoke();
+        //                else AlarmCommandNotReceived?.Invoke();
+        //            }
+        //            else
+        //            {
+        //                Console.WriteLine("Failed to parse the input elements.");
+        //            }
+        //        }
+        //    }
     }
 
-    public partial class TSDataReceiver : IDisposable
+    public partial class TSDataReceiver
     {
         private static readonly Lazy<TSDataReceiver> _lazyInstance = new Lazy<TSDataReceiver>(() => new TSDataReceiver());
         public static TSDataReceiver Instance => _lazyInstance.Value;
-
-        public void Dispose()
-        {
-            _reader?.Dispose();
-            _pipeServer?.Dispose();
-        }
     }
 }
