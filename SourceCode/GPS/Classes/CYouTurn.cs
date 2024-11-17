@@ -1,4 +1,5 @@
 ﻿using AgOpenGPS;
+using AgOpenGPS.Services;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections;
@@ -2556,7 +2557,7 @@ namespace AgOpenGPS
 
         public void BuildManualYouLateral(bool isTurnLeft)
         {
-            FormGPS._isAvoidingAllowed = false;
+            AvoidingService.Instance.DisallowAvoiding();
             double head;
             //point on AB line closest to pivot axle point from ABLine PurePursuit
             if (mf.trk.idx > -1 && mf.trk.gArr.Count > 0)

@@ -658,6 +658,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Services\AlarmService.cs" />
+    <Compile Include="Services\AvoidingService.cs" />
     <Compile Include="Services\CommandsDataReceiver.cs" />
     <Compile Include="Services\PlaceFlagService.cs" />
     <Compile Include="Services\TSConnectionService.cs" />
