@@ -19,11 +19,6 @@ namespace AgOpenGPS
 {
     public partial class FormGPS
     {
-        #region TS Addon
-        public static bool _isAvoidingAllowed = false;
-        public event Action<bool> AvoidingCommandStateChangeTS;
-        #endregion
-
         #region Right Menu
         public bool isABCyled = false;
         private void btnContour_Click(object sender, EventArgs e)
@@ -149,7 +144,7 @@ namespace AgOpenGPS
                 if (sounds.isSteerSoundOn) sounds.sndAutoSteerOff.Play();
                 //trk.isAutoSnapped = false;
 
-                AvoidingCommandStateChangeTS?.Invoke(false);
+                avoidingService.ForbidTSAvoidingCommand();
             }
             else
             {
@@ -163,7 +158,8 @@ namespace AgOpenGPS
                     //    trk.SnapToPivot();
                     //    trk.isAutoSnapped = true;   
                     //}
-                    AvoidingCommandStateChangeTS?.Invoke(true);
+
+                    avoidingService.AllowTSAvoidingCommand();
                 }
                 else
                 {

@@ -17,6 +17,7 @@ namespace AgOpenGPS
         private static FormGPS formGPS;
         private static TSDataSender dataSenderTS;
         private static AlarmService alarmService;
+        private static AvoidingService avoidingService;
         private static double distanceToObstacle;
 
         [STAThread]
@@ -68,8 +69,7 @@ namespace AgOpenGPS
 
                 dataSenderTS = TSDataSender.Instance;
                 formGPS = new FormGPS();
-                formGPS.AvoidingCommandStateChangeTS += OnAvoidingCommandStateChangeTS;
-
+                avoidingService = AvoidingService.Instance;
                 alarmService = AlarmService.Instance;
 
                 StartTSDataReceiverAsync();
@@ -84,46 +84,13 @@ namespace AgOpenGPS
             }
         }
 
-        private static void OnAvoidingCommandStateChangeTS(bool shouldAllowAvoidingDecision)
-        {
-            if (FormGPS._isAvoidingAllowed == shouldAllowAvoidingDecision) return;
-
-            _ = dataSenderTS.SendData(new
-            {
-                allowAvoidingDecision = shouldAllowAvoidingDecision
-            });
-
-            FormGPS._isAvoidingAllowed = shouldAllowAvoidingDecision;
-        }
-
-        //private static async void StartCommandsDataReceiverAsync()
-        //{
-        //    using (var receiver = new CommandsDataReceiver("CommandsPipe"))
-        //    {
-        //        receiver.AvoidCommandReceived += OnAvoidCommandReceived;
-        //        receiver.AlarmCommandReceived += OnAlarmCommandReceived;
-
-        //        await receiver.StartReceivingAsync();
-        //    }
-        //}
-
         private static async void StartTSDataReceiverAsync()
         {
             var receiver = TSDataReceiver.Instance;
             receiver.ReceivedDistanceMeasured += OnDistanceReceived;
-            receiver.ReceivedAvoidingDecision += OnAvoidingDecisionMade;
             receiver.ReceivedAlarmDecision += OnAlarmCommandReceived;
             receiver.ReceivedAlarmDecision += OnAlarmCommandNotReceived;
             await receiver.StartReceivingAsync();
-        }
-
-        private static void OnAvoidingDecisionMade()
-        {
-            if (formGPS.isLateralOn)
-            {
-                formGPS.yt.BuildManualYouLateral(true);
-                formGPS.yt.ResetYouTurn();
-            }
         }
 
         private static void OnAlarmCommandReceived(bool shouldAlarm)
