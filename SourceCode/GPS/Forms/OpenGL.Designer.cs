@@ -2199,8 +2199,8 @@ namespace AgOpenGPS
 
                 double avgPivotDistance = avgPivDistance * (isMetric ? 0.1 : 0.03937);
 
-                if (Math.Abs(avgPivotDistance) <= 20 && !_isAvoidingAllowed && isBtnAutoSteerOn)
-                    AvoidingCommandStateChangeTS?.Invoke(true);
+                if (avoidingService.ShouldAllowAvoidingCommand(avgPivotDistance, isBtnAutoSteerOn))
+                    avoidingService.AllowTSAvoidingCommand();
 
                 string hede;
 

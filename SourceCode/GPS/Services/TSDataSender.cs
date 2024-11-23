@@ -3,90 +3,121 @@ using System.IO.Pipes;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace AgOpenGPS.Services
 {
     public partial class TSDataSender
     {
-        private readonly string _pipeName = "ts_pipe_from_gps";
-        private NamedPipeClientStream _pipeClient;
-        private StreamWriter _writer;
-        private const int MaxRetryAttempts = 8;
-        private const int RetryDelayMilliseconds = 1000;
+        private readonly TSConnectionService _tsConnectionService;
 
-        private TSDataSender() {}
-
-        private async Task ConnectToPipeAsync()
+        private TSDataSender()
         {
-            _pipeClient = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out, PipeOptions.Asynchronous);
-            await _pipeClient.ConnectAsync();
-            _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
+            _tsConnectionService = TSConnectionService.Instance;
         }
 
-        public async Task SendDataAsync(object data)
+        public async Task SendData(object jsonData)
         {
-            string message = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+            if (_tsConnectionService.IsConnecting)
+                return;
 
-            if (_pipeClient == null || !_pipeClient.IsConnected)
-            {
-                try
-                {
-                    await ConnectToPipeAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Failed to connect to pipe: " + ex.Message);
-                    // Optionally handle connection failure here
-                    return;
-                }
-            }
+            string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(jsonData);
+            bool messageSent = false;
 
-            try
+            while (!messageSent)
             {
-                await _writer.WriteLineAsync(message);
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine("Pipe is broken: " + ex.Message);
-                await RetrySendDataAsync(message);
+                if (_tsConnectionService.IsConnectedToTS)
+                {
+                    try
+                    {
+                        _tsConnectionService.WriteToPipe(jsonString);
+                        messageSent = true;
+                    }
+                    catch (IOException ex)
+                    {
+                        await _tsConnectionService.StayConnectedToTSAsync();
+                    }
+                }
+                else
+                {
+                    await _tsConnectionService.StayConnectedToTSAsync();
+                }
             }
         }
 
-        private async Task RetrySendDataAsync(string message)
-        {
-            for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
-            {
-                try
-                {
-                    Console.WriteLine($"Attempting to reconnect... (Attempt {attempt})");
-                    await ConnectToPipeAsync();
-                    await _writer.WriteLineAsync(message);
-                    Console.WriteLine("Reconnected and sent data successfully.");
-                    return;
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"Reconnection attempt {attempt} failed: {ex.Message}");
-                    await Task.Delay(RetryDelayMilliseconds);
-                }
-            }
 
-            Console.WriteLine("Failed to reconnect after multiple attempts.");
-        }
+
+    //    private string message = string.Empty;
+    //    private readonly string _pipeName = "ts_pipe_from_gps";
+    //    private NamedPipeClientStream _pipeClient;
+    //    private StreamWriter _writer;
+    //    private const int MaxRetryAttempts = 8;
+    //    private const int RetryDelayMilliseconds = 1000;
+
+    //    private TSDataSender()
+    //    {
+    //        ConnectToPipe();
+    //    }
+
+    //    private void ConnectToPipe()
+    //    {
+    //        _pipeClient = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out);
+    //        _pipeClient.Connect();
+    //        _writer = new StreamWriter(_pipeClient) { AutoFlush = true };
+    //    }
+
+    //    public void SendData(object data)
+    //    {
+    //        message = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+
+    //        if (_pipeClient.IsConnected)
+    //        {
+    //            try
+    //            {
+    //                _writer.WriteLine(message);
+    //            }
+    //            catch (IOException ex)
+    //            {
+    //                Console.WriteLine("Pipe is broken: " + ex.Message);
+    //                RetrySendData();
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine("Pipe is not connected.");
+    //            RetrySendData();
+    //        }
+    //    }
+
+    //    private void RetrySendData()
+    //    {
+    //        for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
+    //        {
+    //            try
+    //            {
+    //                Console.WriteLine($"Attempting to reconnect... (Attempt {attempt})");
+    //                ConnectToPipe();
+    //                _writer.WriteLine(message);
+    //                Console.WriteLine("Reconnected and sent data successfully.");
+    //                return;
+    //            }
+    //            catch (IOException ex)
+    //            {
+    //                Console.WriteLine($"Reconnection attempt {attempt} failed: {ex.Message}");
+    //                Thread.Sleep(RetryDelayMilliseconds);
+    //            }
+    //        }
+
+    //        Console.WriteLine("Failed to reconnect after multiple attempts.");
+    //    }
     }
 
     #region Class structure
-    public partial class TSDataSender : IDisposable
+    public partial class TSDataSender
     {
         private static readonly Lazy<TSDataSender> _lazyInstance = new Lazy<TSDataSender>(() => new TSDataSender());
         public static TSDataSender Instance => _lazyInstance.Value;
-
-        public void Dispose()
-        {
-            _writer?.Dispose();
-            _pipeClient?.Dispose();
-        }
     }
     #endregion
 }
