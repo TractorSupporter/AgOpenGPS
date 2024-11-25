@@ -15,6 +15,7 @@ namespace AgOpenGPS.Services
         public event Action ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
         public event Action<bool> ReceivedAlarmDecision;
+        public event Action ReceivedAvoidingAllowedQuery;
         private readonly TSConnectionService _tsConnectionService;
 
         private TSDataReceiver()
@@ -45,6 +46,10 @@ namespace AgOpenGPS.Services
                         if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
                         {
                             ReceivedAlarmDecision.Invoke(shouldAlarmToken.Value<bool>());
+                        }
+                        if (data.TryGetValue("askIfAvoidingAllowed", out JToken avoidingAllowedQuery))
+                        {
+                            ReceivedAvoidingAllowedQuery.Invoke();
                         }
                         else
                         {
