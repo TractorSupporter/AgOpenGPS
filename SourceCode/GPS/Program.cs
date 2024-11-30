@@ -88,21 +88,7 @@ namespace AgOpenGPS
         {
             var receiver = TSDataReceiver.Instance;
             receiver.ReceivedDistanceMeasured += OnDistanceReceived;
-            receiver.ReceivedAlarmDecision += OnAlarmCommandReceived;
-            receiver.ReceivedAlarmDecision += OnAlarmCommandNotReceived;
             await receiver.StartReceivingAsync();
-        }
-
-        private static void OnAlarmCommandReceived(bool shouldAlarm)
-        {
-            if (shouldAlarm)
-                alarmService.PlayAlarm(distanceToObstacle);
-        }
-
-        private static void OnAlarmCommandNotReceived(bool shouldAlarm)
-        {
-            if (!shouldAlarm)
-                alarmService.StopAlarm();
         }
         
         //private static void OnAvoidCommandReceived()
@@ -115,6 +101,7 @@ namespace AgOpenGPS
         private static void OnDistanceReceived(double distance)
         {
             distanceToObstacle = distance;
+            alarmService.SetDistanceToObstacle(distance);
             Console.WriteLine($"distance: {distance}");
         }
 

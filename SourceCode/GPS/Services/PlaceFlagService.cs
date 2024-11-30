@@ -9,7 +9,7 @@ namespace AgOpenGPS.Services
 {
     public partial class PlaceFlagService
     {
-        public void placeFlag(FormGPS formGps, List<CFlag> flagPts, CNMEA pn, double fixHeading, byte flagColor, double easting, double northing)
+        public void placeFlag(FormGPS formGps, List<CFlag> flagPts, CNMEA pn, double fixHeading, byte flagColor, double easting, double northing, bool showForm)
         {
             int nextflag = flagPts.Count + 1;
             CFlag flagPt = new CFlag(pn.latitude, pn.longitude, easting, northing,
@@ -25,11 +25,14 @@ namespace AgOpenGPS.Services
                 return;
             }
 
-            if (flagPts.Count > 0)
+            if (showForm)
             {
-                formGps.flagNumberPicked = nextflag;
-                Form form = new FormFlags(formGps);
-                form.Show(formGps);
+                if (flagPts.Count > 0)
+                {
+                    formGps.flagNumberPicked = nextflag;
+                    Form form = new FormFlags(formGps);
+                    form.Show(formGps);
+                }
             }
         }
     }

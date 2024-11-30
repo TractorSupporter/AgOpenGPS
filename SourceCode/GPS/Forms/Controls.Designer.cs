@@ -1018,7 +1018,7 @@ namespace AgOpenGPS
         private void btnFlag_Click(object sender, EventArgs e)
         {
             PlaceFlagService placeFlagService = PlaceFlagService.Instance;
-            placeFlagService.placeFlag(this, flagPts, pn, fixHeading, flagColor, pn.fix.easting, pn.fix.northing);
+            placeFlagService.placeFlag(this, flagPts, pn, fixHeading, flagColor, pn.fix.easting, pn.fix.northing, true);
         }
 
         private void btnSnapToPivot_Click(object sender, EventArgs e)
