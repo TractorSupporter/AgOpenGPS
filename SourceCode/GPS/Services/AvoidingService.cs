@@ -19,6 +19,15 @@ namespace AgOpenGPS.Services
             _dataSenderTS = TSDataSender.Instance;
             _formGPS = formGPS;
             TSDataReceiver.Instance.ReceivedAvoidingDecision += Avoid;
+            TSDataReceiver.Instance.ReceivedAvoidingAllowedQuery += RespondForAvoidingAllowedQuery;
+        }
+
+        public void RespondForAvoidingAllowedQuery()
+        {
+            _ = _dataSenderTS.SendData(new
+            {
+                allowAvoidingDecision = _isAvoidingAllowed
+            });
         }
 
         public void DisallowAvoiding() => _isAvoidingAllowed = false;
