@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AgOpenGPS.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,11 +33,11 @@ namespace AgOpenGPS.Services
 
         public void DisallowAvoiding() => _isAvoidingAllowed = false;
 
-        public void Avoid()
+        public void Avoid(TurnType type)
         {
             if (_formGPS.isLateralOn)
             {
-                _formGPS.yt.BuildManualYouLateral(true);
+                _formGPS.yt.BuildManualYouLateral(TurnType.Left != type);
                 _formGPS.yt.ResetYouTurn();
             }
         }

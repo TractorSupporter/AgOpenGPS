@@ -7,12 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
+using AgOpenGPS.Types;
 
 namespace AgOpenGPS.Services
 {
     public partial class TSDataReceiver
     {
-        public event Action ReceivedAvoidingDecision;
+        public event Action<TurnType> ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
         public event Action<bool> ReceivedAlarmDecision;
         public event Action ReceivedAvoidingAllowedQuery;
@@ -35,9 +36,13 @@ namespace AgOpenGPS.Services
 
                         if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
                         {
+                            bool turnDirection = data.GetValue("turnDirection").Value<bool>();
+
+                            TurnType type = turnDirection ? TurnType.Right : TurnType.Left;
+
                             bool shouldAvoid = shouldAvoidToken.Value<bool>();
                             if (shouldAvoid)
-                                ReceivedAvoidingDecision.Invoke();
+                                ReceivedAvoidingDecision.Invoke(type);
                         }
                         if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
                         {
