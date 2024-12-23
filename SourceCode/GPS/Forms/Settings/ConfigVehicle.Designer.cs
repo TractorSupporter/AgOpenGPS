@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AgOpenGPS.Properties;
+using AgOpenGPS.Services;
 using OpenTK.Graphics.OpenGL;
 
 namespace AgOpenGPS
@@ -661,6 +662,8 @@ namespace AgOpenGPS
                 mf.vehicle.trackWidth = Properties.Settings.Default.setVehicle_trackWidth;
                 mf.tram.halfWheelTrack = mf.vehicle.trackWidth * 0.5;
                 Properties.Settings.Default.Save();
+
+                _ = TSDataSender.Instance.SendData(new { vehicleWidth = (double)nudVehicleTrack.Value * mf.inchOrCm2m });
             }
         }
 

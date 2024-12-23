@@ -16,7 +16,7 @@ namespace AgOpenGPS.Services
         public event Action<TurnType> ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
         public event Action<bool> ReceivedAlarmDecision;
-        public event Action ReceivedAvoidingAllowedQuery;
+        public event Action ReceivedApplicationStateQuery;
         private readonly TSConnectionService _tsConnectionService;
 
         private TSDataReceiver()
@@ -52,13 +52,9 @@ namespace AgOpenGPS.Services
                         {
                             ReceivedAlarmDecision.Invoke(shouldAlarmToken.Value<bool>());
                         }
-                        if (data.TryGetValue("askIfAvoidingAllowed", out JToken avoidingAllowedQuery))
+                        if (data.TryGetValue("askForApplicationState", out JToken avoidingAllowedQuery))
                         {
-                            ReceivedAvoidingAllowedQuery.Invoke();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Failed to parse the input elements.");
+                            ReceivedApplicationStateQuery.Invoke();
                         }
                     }
                     catch (Exception e)
