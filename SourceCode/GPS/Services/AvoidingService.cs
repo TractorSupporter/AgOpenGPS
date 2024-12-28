@@ -28,7 +28,7 @@ namespace AgOpenGPS.Services
             _ = _dataSenderTS.SendData(new
             {
                 allowAvoidingDecision = _isAvoidingAllowed,
-                vehicleWidth = Properties.Settings.Default.setVehicle_trackWidth
+                vehicleWidth = Math.Max(_formGPS.tool.width, _formGPS.vehicle.trackWidth)
             });
         }
 

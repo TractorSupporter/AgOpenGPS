@@ -144,6 +144,8 @@ namespace AgOpenGPS
             }
 
             UpdateSummary();
+
+
         }
 
         private void btnVehicleDelete_Click(object sender, EventArgs e)
