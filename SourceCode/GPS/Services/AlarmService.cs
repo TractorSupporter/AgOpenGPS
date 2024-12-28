@@ -59,20 +59,22 @@ namespace AgOpenGPS.Services
             }
         }
 
-        public void PlayAlarm(double distance)
+        public void PlayAlarm(double distance, double objectDirectionFromHeadingInDegrees = 0)
         {
             if (_formGPS.isBtnAutoSteerOn)
             {
                 IsAlarmPlaying = true;
                 if (!_alarmTimer.Enabled)
                 {
+                    var heading = _formGPS.fixHeading + objectDirectionFromHeadingInDegrees * Math.PI / 180.0;
+
                     double distanceInMeters = distance / 100 + 1;
                     if (_formGPS.vehicle.vehicleType != 1)
                     {
                         distanceInMeters += _formGPS.vehicle.wheelbase;
                     }
-                    double newEasting = _formGPS.pn.fix.easting + distanceInMeters * Math.Sin(_formGPS.fixHeading);
-                    double newNorthing = _formGPS.pn.fix.northing + distanceInMeters * Math.Cos(_formGPS.fixHeading);
+                    double newEasting = _formGPS.pn.fix.easting + distanceInMeters * Math.Sin(heading);
+                    double newNorthing = _formGPS.pn.fix.northing + distanceInMeters * Math.Cos(heading);
 
 
                     _placeFlagService.placeFlag(_formGPS, _formGPS.flagPts, _formGPS.pn, _formGPS.fixHeading, _formGPS.flagColor, newEasting, newNorthing, false);
