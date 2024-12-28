@@ -3,11 +3,13 @@ using System.Windows.Forms;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace AgOpenGPS.Services
 {
     public partial class AlarmService
     {
+        public static bool _isAlarmAllowed = false;
         private Timer _alarmTimer;
         private static FormGPS _formGPS;
         public bool IsAlarmPlaying {get; set;}
@@ -47,17 +49,55 @@ namespace AgOpenGPS.Services
             }
         }
 
-        public void MakeAlarmDecision(bool playAlarm)
+        public void MakeAlarmDecision()
         {
-            if (playAlarm)
-            {
-                PlayAlarm(distanceToObstacle);
-            }
-            else
-            {
-                StopAlarm();
-            }
+            _isAlarmAllowed = false;
+            PlayAlarm(distanceToObstacle);
+
+            _ = CancelAlarm();
         }
+
+        public async Task CancelAlarm()
+        {
+            
+            var time = distanceToObstacle / _formGPS.avgSpeed * 36 * 1.2 ; // 36 for converting kmh to cm/ms and avoiding slows down vehicle a bit
+
+            await Task.Delay((int)time + 1);
+
+            StopAlarm();
+            AllowTSAlarmCommand();
+        }
+
+        public void AllowTSAlarmCommand()
+        {
+            if (_isAlarmAllowed) return;
+            _ = _dataSenderTS.SendData(new
+            {
+                allowAlarmDecision = true
+            });
+            _isAlarmAllowed = true;
+        }
+
+        public void ForbidTSAlarmCommand()
+        {
+            if (!_isAlarmAllowed) return;
+            _ = _dataSenderTS.SendData(new
+            {
+                allowAlarmDecision = false
+            });
+            _isAlarmAllowed = false;
+        }
+
+
+
+
+
+
+
+
+
+
+        
 
         public void PlayAlarm(double distance, double objectDirectionFromHeadingInDegrees = 0)
         {

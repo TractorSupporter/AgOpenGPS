@@ -15,14 +15,28 @@ namespace AgOpenGPS.Services
     {
         public event Action<TurnType> ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
-        public event Action<bool> ReceivedAlarmDecision;
+        public event Action ReceivedAlarmDecision;
         public event Action ReceivedApplicationStateQuery;
         private readonly TSConnectionService _tsConnectionService;
+        private TSDataSender _dataSenderTS;
 
         private TSDataReceiver()
         {
+            _dataSenderTS = TSDataSender.Instance;
             _tsConnectionService = TSConnectionService.Instance;
+            ReceivedApplicationStateQuery += RespondForApplicationStateQuery;
         }
+
+        public void RespondForApplicationStateQuery()
+        {
+            _ = _dataSenderTS.SendData(new
+            {
+                allowAlarmDecision = AlarmService._isAlarmAllowed,
+                allowAvoidingDecision = AvoidingService._isAvoidingAllowed,
+                vehicleWidth = AvoidingService.Instance.VehicleWidth
+            });
+        }
+
 
         public async Task StartReceivingAsync()
         {
@@ -50,7 +64,10 @@ namespace AgOpenGPS.Services
                         }
                         if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
                         {
-                            ReceivedAlarmDecision.Invoke(shouldAlarmToken.Value<bool>());
+                            bool decision = shouldAlarmToken.Value<bool>();
+
+                            if (decision)
+                                ReceivedAlarmDecision.Invoke();
                         }
                         if (data.TryGetValue("askForApplicationState", out JToken avoidingAllowedQuery))
                         {

@@ -145,6 +145,7 @@ namespace AgOpenGPS
                 //trk.isAutoSnapped = false;
 
                 avoidingService.ForbidTSAvoidingCommand();
+                alarmService.ForbidTSAlarmCommand();
             }
             else
             {
@@ -160,6 +161,7 @@ namespace AgOpenGPS
                     //}
 
                     avoidingService.AllowTSAvoidingCommand();
+                    alarmService.AllowTSAlarmCommand();
                 }
                 else
                 {
