@@ -32,7 +32,7 @@ namespace AgOpenGPS.Services
                 {
                     _dataSenderTS.SendData(new
                     {
-                        speed = currentSpeed
+                        speed = currentSpeed / 3.6
                     });
                 }
                 await Task.CompletedTask;
