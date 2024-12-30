@@ -15,7 +15,7 @@ namespace AgOpenGPS.Services
     {
         public event Action<TurnType> ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
-        public event Action ReceivedAlarmDecision;
+        public event Action<double> ReceivedAlarmDecision;
         public event Action ReceivedApplicationStateQuery;
         private readonly TSConnectionService _tsConnectionService;
         private TSDataSender _dataSenderTS;
@@ -67,7 +67,12 @@ namespace AgOpenGPS.Services
                             bool decision = shouldAlarmToken.Value<bool>();
 
                             if (decision)
-                                ReceivedAlarmDecision.Invoke();
+                            {
+                                data.TryGetValue("angle", out JToken angleToken);
+
+
+                                ReceivedAlarmDecision.Invoke(angleToken.Value<double>());
+                            }
                         }
                         if (data.TryGetValue("askForApplicationState", out JToken avoidingAllowedQuery))
                         {

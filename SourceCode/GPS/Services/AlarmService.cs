@@ -49,10 +49,10 @@ namespace AgOpenGPS.Services
             }
         }
 
-        public void MakeAlarmDecision()
+        public void MakeAlarmDecision(double angle)
         {
             _isAlarmAllowed = false;
-            PlayAlarm(distanceToObstacle);
+            PlayAlarm(distanceToObstacle, angle);
 
             _ = CancelAlarm();
         }
