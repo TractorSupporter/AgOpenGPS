@@ -60,7 +60,7 @@ namespace AgOpenGPS.Services
         public async Task CancelAlarm()
         {
             
-            var time = distanceToObstacle / _formGPS.avgSpeed * 36 * 1.2 ; // 36 for converting kmh to cm/ms and avoiding slows down vehicle a bit
+            var time = distanceToObstacle / Math.Max(_formGPS.avgSpeed, 0.01) * 36 * 1.2 ; // 36 for converting kmh to cm/ms and avoiding slows down vehicle a bit
 
             await Task.Delay((int)time + 1);
 
