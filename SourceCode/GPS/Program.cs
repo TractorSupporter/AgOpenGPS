@@ -95,7 +95,7 @@ namespace AgOpenGPS
         //{
         //    // Process the distance data as needed
         //    Console.WriteLine($"Received command: avoid");
-            
+
         //}
 
         private static void OnDistanceReceived(double distance)

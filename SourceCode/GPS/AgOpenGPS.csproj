@@ -547,6 +547,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>gStr.no.resx</DependentUpon>
     </Compile>
+    <Compile Include="gStr.pt.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>gStr.pt.resx</DependentUpon>
+    </Compile>
     <Compile Include="gStr.tr.Designer.cs">
       <DependentUpon>gStr.tr.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -861,7 +866,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>gStr.no.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="gStr.pt.resx" />
+    <EmbeddedResource Include="gStr.pt.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>gStr.pt.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="gStr.tr.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>gStr.tr.Designer.cs</LastGenOutput>
@@ -966,6 +974,7 @@
   <ItemGroup>
     <Content Include="AOG.ico" />
     <Content Include="aChangeLog.txt" />
+    <None Include="Resources\TractorSupporter.bmp" />
     <None Include="btnImages\AntennaLeftOffset.png" />
     <None Include="btnImages\AntennaRightOffset.png" />
     <None Include="btnImages\AntennaNoOffset.png" />
@@ -978,6 +987,7 @@
     <None Include="btnImages\Config\ConT_TramOverrideDisplay.png" />
     <None Include="btnImages\GridRotate.png" />
     <Resource Include="Resources\AlarmObstacle.wav" />
+    <Content Include="btnImages\TractorSupporter.png" />
     <Content Include="Resources\TF012.WAV" />
     <None Include="Resources\SectionOn.wav" />
     <None Include="Resources\SectionOff.wav" />
