@@ -7,21 +7,36 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
+using AgOpenGPS.Types;
 
 namespace AgOpenGPS.Services
 {
     public partial class TSDataReceiver
     {
-        public event Action ReceivedAvoidingDecision;
+        public event Action<TurnType> ReceivedAvoidingDecision;
         public event Action<double> ReceivedDistanceMeasured;
-        public event Action<bool> ReceivedAlarmDecision;
-        public event Action ReceivedAvoidingAllowedQuery;
+        public event Action<double> ReceivedAlarmDecision;
+        public event Action ReceivedApplicationStateQuery;
         private readonly TSConnectionService _tsConnectionService;
+        private TSDataSender _dataSenderTS;
 
         private TSDataReceiver()
         {
+            _dataSenderTS = TSDataSender.Instance;
             _tsConnectionService = TSConnectionService.Instance;
+            ReceivedApplicationStateQuery += RespondForApplicationStateQuery;
         }
+
+        public void RespondForApplicationStateQuery()
+        {
+            _ = _dataSenderTS.SendData(new
+            {
+                allowAlarmDecision = AlarmService._isAlarmAllowed,
+                allowAvoidingDecision = AvoidingService._isAvoidingAllowed,
+                vehicleWidth = AvoidingService.Instance.VehicleWidth
+            });
+        }
+
 
         public async Task StartReceivingAsync()
         {
@@ -35,9 +50,13 @@ namespace AgOpenGPS.Services
 
                         if (data.TryGetValue("shouldAvoid", out JToken shouldAvoidToken))
                         {
+                            bool turnDirection = data.GetValue("turnDirection").Value<bool>();
+
+                            TurnType type = turnDirection ? TurnType.Right : TurnType.Left;
+
                             bool shouldAvoid = shouldAvoidToken.Value<bool>();
                             if (shouldAvoid)
-                                ReceivedAvoidingDecision.Invoke();
+                                ReceivedAvoidingDecision.Invoke(type);
                         }
                         if (data.TryGetValue("distanceMeasured", out JToken distanceMeasuredToken))
                         {
@@ -45,15 +64,19 @@ namespace AgOpenGPS.Services
                         }
                         if (data.TryGetValue("shouldAlarm", out JToken shouldAlarmToken))
                         {
-                            ReceivedAlarmDecision.Invoke(shouldAlarmToken.Value<bool>());
+                            bool decision = shouldAlarmToken.Value<bool>();
+
+                            if (decision)
+                            {
+                                data.TryGetValue("angle", out JToken angleToken);
+
+
+                                ReceivedAlarmDecision.Invoke(angleToken.Value<double>());
+                            }
                         }
-                        if (data.TryGetValue("askIfAvoidingAllowed", out JToken avoidingAllowedQuery))
+                        if (data.TryGetValue("askForApplicationState", out JToken avoidingAllowedQuery))
                         {
-                            ReceivedAvoidingAllowedQuery.Invoke();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Failed to parse the input elements.");
+                            ReceivedApplicationStateQuery.Invoke();
                         }
                     }
                     catch (Exception e)

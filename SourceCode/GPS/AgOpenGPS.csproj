@@ -666,10 +666,12 @@
     <Compile Include="Services\AvoidingService.cs" />
     <Compile Include="Services\CommandsDataReceiver.cs" />
     <Compile Include="Services\PlaceFlagService.cs" />
+    <Compile Include="Services\SpeedService.cs" />
     <Compile Include="Services\TSConnectionService.cs" />
     <Compile Include="Services\TSDataReceiver.cs" />
     <Compile Include="Services\TSDataSender.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Types\TurnType.cs" />
     <EmbeddedResource Include="Forms\Field\FormEnterFlag.resx">
       <DependentUpon>FormEnterFlag.cs</DependentUpon>
     </EmbeddedResource>

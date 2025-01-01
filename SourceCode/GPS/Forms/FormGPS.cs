@@ -242,6 +242,7 @@ namespace AgOpenGPS
         /// 
         public AlarmService alarmService;
         public AvoidingService avoidingService;
+        public SpeedService speedService;
 
         private void panelRight_Paint(object sender, PaintEventArgs e)
         {
@@ -354,6 +355,7 @@ namespace AgOpenGPS
 
             alarmService = AlarmService.Initialize(this);
             avoidingService = AvoidingService.Initialize(this);
+            speedService = SpeedService.Initialize(this);
         }
 
         private void FormGPS_Load(object sender, EventArgs e)

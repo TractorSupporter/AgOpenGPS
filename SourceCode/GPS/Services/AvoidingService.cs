@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AgOpenGPS.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,24 +20,17 @@ namespace AgOpenGPS.Services
             _dataSenderTS = TSDataSender.Instance;
             _formGPS = formGPS;
             TSDataReceiver.Instance.ReceivedAvoidingDecision += Avoid;
-            TSDataReceiver.Instance.ReceivedAvoidingAllowedQuery += RespondForAvoidingAllowedQuery;
         }
 
-        public void RespondForAvoidingAllowedQuery()
-        {
-            _ = _dataSenderTS.SendData(new
-            {
-                allowAvoidingDecision = _isAvoidingAllowed
-            });
-        }
+        public double VehicleWidth => Math.Max(_formGPS.tool.width, _formGPS.vehicle.trackWidth);
 
         public void DisallowAvoiding() => _isAvoidingAllowed = false;
 
-        public void Avoid()
+        public void Avoid(TurnType type)
         {
             if (_formGPS.isLateralOn)
             {
-                _formGPS.yt.BuildManualYouLateral(true);
+                _formGPS.yt.BuildManualYouLateral(TurnType.Left != type);
                 _formGPS.yt.ResetYouTurn();
             }
         }
