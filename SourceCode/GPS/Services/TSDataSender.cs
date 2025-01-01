@@ -116,8 +116,8 @@ namespace AgOpenGPS.Services
     #region Class structure
     public partial class TSDataSender
     {
-        public static TSDataSender Instance => _lazyInstance.Value;
         private static readonly Lazy<TSDataSender> _lazyInstance = new Lazy<TSDataSender>(() => new TSDataSender());
+        public static TSDataSender Instance => _lazyInstance.Value;
     }
     #endregion
 }
