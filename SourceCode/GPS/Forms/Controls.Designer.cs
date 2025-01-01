@@ -961,16 +961,33 @@ namespace AgOpenGPS
         {
             try
             {
-                DirectoryInfo currentDir = new DirectoryInfo(Application.StartupPath);
-                DirectoryInfo targetDir = currentDir.Parent.Parent;
-                targetDir = new DirectoryInfo(Path.Combine(targetDir.FullName, "tractor-supporter-win", "TractorSupporter", "bin", "Debug"));
-                DirectoryInfo versionDir = targetDir.EnumerateDirectories("net8.0-windows").FirstOrDefault()
-                           ?? targetDir.EnumerateDirectories().FirstOrDefault();
+                // Check if the process is already running
+                Process existingProcess = Process.GetProcessesByName("TractorSupporter").FirstOrDefault();
 
-                if (versionDir != null)
+                if (existingProcess != null)
                 {
-                    string wpfAppPath = Path.Combine(targetDir.FullName, versionDir.FullName, "TractorSupporter.exe");
-                    Process wpfAppProcess = Process.Start(wpfAppPath, "click_connect_button");
+                    // Bring the existing process to the front
+                    IntPtr handle = existingProcess.MainWindowHandle;
+                    if (handle != IntPtr.Zero)
+                    {
+                        ShowWindow(handle, 9);
+                        SetForegroundWindow(handle);
+                    }
+                }
+                else
+                {
+                    // Locate and start the process if not running
+                    DirectoryInfo currentDir = new DirectoryInfo(Application.StartupPath);
+                    DirectoryInfo targetDir = currentDir.Parent.Parent;
+                    targetDir = new DirectoryInfo(Path.Combine(targetDir.FullName, "tractor-supporter-win", "TractorSupporter", "bin", "Debug"));
+                    DirectoryInfo versionDir = targetDir.EnumerateDirectories("net8.0-windows").FirstOrDefault()
+                               ?? targetDir.EnumerateDirectories().FirstOrDefault();
+
+                    if (versionDir != null)
+                    {
+                        string wpfAppPath = Path.Combine(targetDir.FullName, versionDir.FullName, "TractorSupporter.exe");
+                        Process wpfAppProcess = Process.Start(wpfAppPath, "click_connect_button");
+                    }
                 }
             }
             catch (Exception ex)
